@@ -1,7 +1,6 @@
 ---
 title: "WebAssembly and Go"
 date: 2021-07-29T23:24:49+02:00
-draft: true
 ---
 This semester in university I had one professor that distributed lectures and other learning material as PDF files.
 
