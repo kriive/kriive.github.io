@@ -1,0 +1,4 @@
+baseURL = "https://kriive.github.io/"
+languageCode = "en-us"
+title = "kriive"
+theme = "paper"
