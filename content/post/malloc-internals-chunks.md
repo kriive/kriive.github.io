@@ -1,7 +1,6 @@
 ---
 title: "Malloc internals: chunks"
 date: 2022-08-30T12:45:11+02:00
-draft: true
 ---
 Since last year I'm involved in infosec, and I co-founded the
 [havce](https://havce.it) CTF team with some of the colleagues that attended
