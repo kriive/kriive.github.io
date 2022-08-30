@@ -1,4 +1,31 @@
-baseURL = "https://kriive.github.io/"
+baseURL = "https://tortel.li/"
 languageCode = "en-us"
-title = "kriive"
+title = "tortel.li"
 theme = "paper"
+
+[params]
+  # color style
+  color = 'gray'                 # linen, wheat, gray, light
+
+  # header social icons
+  twitter = 'kriive'
+  github = 'kriive'
+  instagram = 'manuelromei'
+  rss = true 
+
+  # home page profile
+  avatar = 'https://avatars.githubusercontent.com/u/24835026'
+  name = 'Manuel Romei'
+  bio = 'Software enthusiast'
+
+  # misc
+  disableHLJS = false              # disable requesting highlight.js
+  monoDarkIcon = true             # show monochrome dark mode icon
+
+[menu]
+  [[menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 10
+
