@@ -11,6 +11,7 @@ theme = "paper"
   twitter = 'kriive'
   github = 'kriive'
   instagram = 'manuelromei'
+  mastodon = "https://fosstodon.org/@kriive"
   rss = true 
 
   # home page profile
