@@ -67,7 +67,7 @@ discussion now.
 ![A table representing the struct main_arena](/main_arena_partial_layout.svg)
 If you're curious about the actual fields contained in the
 `malloc_state` struct, you can check them out
-[in the source code](https://elixir.bootlin.com/glibc/glibc-2.36/source/malloc/malloc.c#L1824).
+[in the source code](https://elixir.bootlin.com/glibc/glibc-2.31/source/malloc/malloc.c#L1824).
 
 The following picture shows how the `0x20` fastbin could look like
 once some chunks are `free`'d into it. Note how the first quadword of user
@@ -86,7 +86,7 @@ gets linked into that fastbin.
 ``` C
 // fastbin_demo_no_tcache.c
 //
-// glibc 2.36 compiled without tcache
+// glibc 2.31 compiled without tcache
 // gcc -o fastbins_demo_no_tcache fastbin_demo_no_tcache.c -g
 #include <stdio.h>
 #include <stdlib.h>
@@ -162,7 +162,7 @@ Let's try that and see what happens.
 ``` C
 // double_free_demo_no_tcache.c
 //
-// glibc 2.36 compiled without tcache
+// glibc 2.31 compiled without tcache
 // gcc -o double_free_demo_no_tcache double_free_demo_no_tcache.c -g
 
 #include <stdio.h>
@@ -194,7 +194,7 @@ the two `free(a)` calls.
 ``` C
 // double_free_2_demo_no_tcache.c
 //
-// glibc 2.36 compiled without tcache
+// glibc 2.31 compiled without tcache
 // gcc -o double_free_2_demo_no_tcache double_free_2_demo_no_tcache.c -g
 
 #include <stdio.h>
@@ -368,7 +368,9 @@ tcachebins before proceeding to the actual attack.
 After this, it uses the `calloc` function instead of `malloc` to allocate 
 chunks, and this, at first, confused me a lot.
 
-Turns out that `calloc` **does not allocate from the `tcache`**.
+Turns out that `calloc` **does not allocate from the `tcache`**. And, apparently,
+no one knows why.
+
 This made me even more confused.
 
 Does this mean that the **fastbin dup** attack does not work unless `calloc`
@@ -380,8 +382,16 @@ quite a minute.
 I managed to make the shellphish exploit work with `malloc`s only. It's a
 little more cluttered, but it works.
 
-You only have to keep in mind the cases when malloc and free turn to fastbin,
+You only have to keep in mind the cases when `malloc` and `free` turn to fastbin,
 keeping the tcachebins full or empty, based on our needs.
+
+This means, if we want to `free` a chunk into the fastbin, we have to fill up the respective tcache
+beforehand, so that our target chunk gets `free`'d into the fastbin,
+and not into a tcachebin (since it's full).
+
+On the contrary, if we want to `malloc` a particular chunk from fastbins, we need to make
+sure that the respective tcachebin is empty, so that `malloc` turns to fastbins
+to select candidates to return to the user.
 
 For example, when we need to put the three chunks in the fastbin, we have to
 make sure that the tcachebin is full. 
@@ -407,12 +417,12 @@ int main()
     int *c = malloc(8);
    
     printf("Fill up tcache.\n");
-    void *ptrs[12];
+    void *ptrs[7];
     for (int i=0; i<7; i++) {
         ptrs[i] = malloc(8);
     }
       
-    // tcache fill
+    // Fill the 0x20 sized tcachebin.
     for (int i=0; i<7; i++) {
         free(ptrs[i]);
     }
@@ -422,22 +432,21 @@ int main()
     printf("3rd malloc(8): %p\n", c);
   
     printf("Freeing the first one...\n");
-    // should go in fastbin, since tcache is full
-    //
+    // This should go in the 0x20 fastbin, since the 0x20 tcachebin is full.
     free(a);
   
     printf("If we free %p again, things will crash because %p is at the top of the free list.\n", a, a);
     // free(a);
   
     printf("So, instead, we'll free %p.\n", b);
-    // should go in fastbin too
+    // This should go in the 0x20 fastbin too.
     free(b);
   
     printf("Now, we can free %p again, since it's not the head of the free list.\n", a);
-    // double free
+    // Here's our double free, the chunk A is put into the 0x20 fastbin a second time.
     free(a);
   
-    // empty tcache, so that `malloc` has to look into fastbins
+    // Empty the 0x20 tcache, so that `malloc` has to look into the 0x20 fastbin to allocate.
     for (int i=0; i<7; i++) {
         ptrs[i] = malloc(8);
     }
@@ -464,3 +473,5 @@ to contact me on Telegram (see About page) or via e-mail at
 manuel[dot]romei[at]outlook[dot]it.
 
 Pwn the world and have fun!
+
+*Many thanks to Pratik Devkota for proofreading this article and suggesting improvements.*
