@@ -1,7 +1,6 @@
 ---
 title: "Unauthenticated RCE on a RIGOL oscilloscope"
 date: 2023-02-08T14:59:51+01:00
-draft: true
 ---
 I work in a company that uses custom electronic boards, so there are plenty of instruments floating around that electrical engineers employ to debug faulty connections and solderings.
 
