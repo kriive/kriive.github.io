@@ -4,13 +4,13 @@ date: 2023-09-01T15:00:00+02:00
 ---
 At least once in their career, every Go programmer had to write code that 
 interacted with the filesystem. For example, if our application needed
-to handle some documents, we may need to write code that handles the files
-and saves it under a directory.
+to handle some documents, we probably had to write code that handled the 
+files and saved it under a directory.
 
-We may end up writing code that resemble this:
+We may have ended up writing code that resemble this:
 ```go
 p := filepath.Join(uploadsDirectory, userChosenFileName)
-f, err := os.Open(p)
+f, err := os.OpenFile(p, os.O_RDWR|os.O_CREATE, 0755)
 if err != nil {
   return err
 }
@@ -18,7 +18,7 @@ f.Write(userPayload)
 // ...
 ```
 For the expert eye, this pattern looks suspicious and error prone: what if
-our malicious user chose to name their file `../../../../home/kriive/.ssh/authorized_key`? It would end up overwriting my `authorized_keys` file
+a malicious user chose to name their file `../../../../home/kriive/.ssh/authorized_key`? It would end up overwriting my `authorized_keys` file
 with an attacker controlled value and letting them SSH into my box.
 This attack is commonly referred to as *path traversal attack*.
 
@@ -32,7 +32,7 @@ sufficient, like this example.
 ```go
 // This is insecure!
 p := filepath.Join(uploadsDirectory, filepath.Clean(userChosenFileName))
-f, err := os.Open(p)
+f, err := os.OpenFile(p, os.O_RDWR|os.O_CREATE, 0755)
 if err != nil {
   return err
 }
@@ -54,11 +54,13 @@ supplied path begins with a slash. Even if there are two or more slashes,
 
 ```go
 // This is ok
-p := filepath.Join(uploadsDirectory, "/"+filepath.Clean(userChosenFileName))
-f, err := os.Open(p)
+p := filepath.Join(uploadsDirectory, filepath.Clean("/"+userChosenFileName))
+f, err := os.OpenFile(p, os.O_RDWR|os.O_CREATE, 0755)
 if err != nil {
   return err
 }
 f.Write(userPayload)
 // ...
 ```
+
+[Here](https://go.dev/play/p/X2sY6ykdltL) is an interactive example that shows the vulnerable pattern.
