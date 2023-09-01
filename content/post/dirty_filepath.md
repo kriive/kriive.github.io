@@ -1,7 +1,6 @@
 ---
 title: "filepath.Clean: terms and conditions apply"
-date: 2023-08-31T19:35:06+02:00
-draft: true
+date: 2023-09-01T15:00:00+02:00
 ---
 At least once in their career, every Go programmer had to write code that 
 interacted with the filesystem. For example, if our application needed
